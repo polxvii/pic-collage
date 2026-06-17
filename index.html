@@ -17,442 +17,482 @@
       --text: #f2f2f7;
       --muted: #636366;
       --accent: #0a84ff;
-      --danger: #ff453a;
       --success: #30d158;
+      --danger: #ff453a;
     }
 
-    html { background: var(--bg); }
+    html, body { background: var(--bg); }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      padding: 16px 16px 110px;
+      padding: 0 0 90px;
       max-width: 480px;
       margin: 0 auto;
     }
 
+    /* ── Header ── */
     header {
-      text-align: center;
-      padding: 24px 0 20px;
-    }
-    header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; }
-    header p  { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
-
-    /* Upload zone */
-    .upload-zone {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
-      background: var(--surface);
-      border: 2px dashed var(--border);
-      border-radius: 16px;
-      padding: 28px 16px;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
+      justify-content: space-between;
+      padding: 16px 16px 8px;
     }
-    .upload-zone:active { background: #252527; border-color: var(--accent); }
-    .upload-zone .icon  { font-size: 2rem; line-height: 1; }
-    .upload-zone .label { font-weight: 600; font-size: 0.95rem; }
-    .upload-zone .hint  { font-size: 0.75rem; color: var(--muted); }
-
+    header h1 { font-size: 1.25rem; font-weight: 700; }
+    .add-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 20px;
+      font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
     #fileInput { display: none; }
 
-    /* Section headings */
-    .section-title {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin: 20px 0 8px;
+    /* ── Thumbnail strip ── */
+    .thumb-strip-wrap {
+      padding: 6px 16px 2px;
+      display: none;
     }
+    .thumb-strip-label {
+      font-size: 0.68rem; color: var(--muted); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.7px;
+      margin-bottom: 6px;
+    }
+    .thumb-strip {
+      display: flex; gap: 6px;
+      overflow-x: auto; padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .thumb-strip::-webkit-scrollbar { display: none; }
 
-    /* Thumbnail grid */
-    .thumb-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-    }
     .thumb-item {
-      position: relative;
-      aspect-ratio: 1;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 2px solid transparent;
-      transition: border-color 0.15s, opacity 0.15s;
+      flex: 0 0 64px; width: 64px; height: 64px;
+      border-radius: 8px; overflow: hidden;
+      position: relative; border: 2px solid transparent;
+      transition: border-color 0.15s;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
-    .thumb-item img {
-      width: 100%; height: 100%;
-      object-fit: cover; display: block;
-      pointer-events: none;
-    }
+    .thumb-item img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
     .thumb-item .seq {
-      position: absolute; top: 4px; left: 4px;
-      background: rgba(0,0,0,0.65);
-      backdrop-filter: blur(4px);
-      color: #fff; font-size: 0.7rem; font-weight: 700;
-      padding: 2px 7px; border-radius: 20px;
+      position: absolute; bottom: 3px; left: 3px;
+      background: rgba(0,0,0,0.7); color: #fff;
+      font-size: 0.62rem; font-weight: 700;
+      padding: 1px 5px; border-radius: 10px;
       pointer-events: none;
     }
     .thumb-item .del-btn {
-      position: absolute; top: 4px; right: 4px;
-      width: 22px; height: 22px;
-      background: rgba(255,69,58,0.85);
+      position: absolute; top: 2px; right: 2px;
+      width: 18px; height: 18px;
+      background: rgba(255,69,58,0.9);
       border: none; border-radius: 50%;
-      color: #fff; font-size: 13px;
-      line-height: 22px; text-align: center;
-      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      color: #fff; font-size: 11px; line-height: 18px;
+      text-align: center; cursor: pointer;
     }
-    .thumb-item.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
-    .thumb-item.dragging { opacity: 0.35; }
-    .thumb-item.drag-over { border-color: var(--accent); }
+    .thumb-item.selected { border-color: var(--accent); }
+    .thumb-item.dragging { opacity: 0.3; }
+    .thumb-item.drag-over { border-color: var(--success); }
 
     .swap-hint {
-      font-size: 0.75rem; color: var(--accent);
-      text-align: center; margin-top: 6px; min-height: 18px;
+      font-size: 0.7rem; color: var(--accent);
+      padding: 4px 0 0; min-height: 16px;
     }
 
-    /* Layout picker */
+    /* ── Live Preview ── */
+    .preview-wrap {
+      margin: 10px 16px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--surface);
+      position: relative;
+      display: none;
+    }
+    .preview-wrap canvas {
+      display: block; width: 100%; height: auto;
+    }
+    .preview-placeholder {
+      aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); font-size: 0.85rem;
+    }
+    .preview-updating {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.3);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.15s;
+    }
+    .preview-updating.show { opacity: 1; }
+    .spinner {
+      width: 28px; height: 28px; border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 0.68rem; color: var(--muted); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.7px;
+      padding: 0 16px; margin: 12px 0 6px;
+    }
+
+    /* ── Layout picker ── */
     .layout-scroll {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      -webkit-overflow-scrolling: touch;
+      display: flex; gap: 8px;
+      padding: 0 16px 4px;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
     }
     .layout-scroll::-webkit-scrollbar { display: none; }
 
     .layout-btn {
       flex: 0 0 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      padding: 10px 12px;
-      background: var(--surface);
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      color: var(--muted);
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s, background 0.15s;
-      -webkit-tap-highlight-color: transparent;
-      min-width: 64px;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 8px 10px;
+      background: var(--surface); border: 2px solid var(--border);
+      border-radius: 10px; color: var(--muted);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      transition: border-color 0.15s, color 0.15s;
     }
-    .layout-btn svg { width: 54px; height: 40px; display: block; }
-    .layout-btn .lbl { font-size: 0.65rem; font-weight: 600; white-space: nowrap; }
-    .layout-btn.active {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: rgba(10,132,255,0.1);
-    }
-    .layout-btn:active { background: #252527; }
+    .layout-btn svg { display: block; }
+    .layout-btn .lbl { font-size: 0.6rem; font-weight: 600; white-space: nowrap; }
+    .layout-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(10,132,255,0.1); }
 
-    .no-layouts {
-      color: var(--muted); font-size: 0.82rem;
-      padding: 6px 0;
+    /* ── Ratio picker ── */
+    .ratio-scroll {
+      display: flex; gap: 8px;
+      padding: 0 16px 4px;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
+    .ratio-scroll::-webkit-scrollbar { display: none; }
 
-    /* Options row */
+    .ratio-btn {
+      flex: 0 0 auto;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      padding: 8px 12px;
+      background: var(--surface); border: 2px solid var(--border);
+      border-radius: 10px; color: var(--muted);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      transition: border-color 0.15s, color 0.15s;
+      min-width: 52px;
+    }
+    .ratio-icon {
+      border: 2px solid currentColor;
+      border-radius: 3px;
+      background: transparent;
+    }
+    .ratio-btn .lbl { font-size: 0.62rem; font-weight: 700; white-space: nowrap; }
+    .ratio-btn .sub { font-size: 0.55rem; color: var(--muted); }
+    .ratio-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(10,132,255,0.1); }
+    .ratio-btn.active .sub { color: var(--accent); opacity: 0.7; }
+
+    /* ── Options row ── */
     .options-row {
-      display: flex;
-      gap: 8px;
-      align-items: flex-end;
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 16px; flex-wrap: wrap;
     }
-    .option-group {
-      flex: 1;
-      display: flex; flex-direction: column; gap: 4px;
+    .bg-picker { display: flex; gap: 6px; align-items: center; }
+    .bg-swatch {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 3px solid transparent; cursor: pointer;
+      transition: border-color 0.15s;
+      -webkit-tap-highlight-color: transparent;
     }
-    .option-group label { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
+    .bg-swatch.active { border-color: var(--accent); }
+    .bg-swatch[data-color="#ffffff"] { background: #fff; box-shadow: 0 0 0 1px #333 inset; }
+    .bg-swatch[data-color="#000000"] { background: #000; box-shadow: 0 0 0 1px #444 inset; }
+    .bg-swatch[data-color="#f0f0f0"] { background: #f0f0f0; box-shadow: 0 0 0 1px #333 inset; }
 
-    select {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 0.88rem;
-      width: 100%;
-      -webkit-appearance: none; appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23636366' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-    }
-
-    .slider-row {
-      display: flex; align-items: center; gap: 10px;
-      margin-top: 10px;
-    }
-    .slider-row label { font-size: 0.72rem; color: var(--muted); font-weight: 500; white-space: nowrap; }
-    .slider-row .val  { font-size: 0.78rem; color: var(--text); min-width: 24px; text-align: right; }
-
+    .gap-row { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 140px; }
+    .gap-row label { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+    .gap-row .val { font-size: 0.75rem; min-width: 20px; text-align: right; }
     input[type=range] {
-      flex: 1; -webkit-appearance: none; appearance: none;
-      height: 4px; background: var(--border);
-      border-radius: 2px; outline: none;
+      flex: 1; -webkit-appearance: none; height: 4px;
+      background: var(--border); border-radius: 2px; outline: none;
     }
     input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 22px; height: 22px;
-      background: var(--accent); border-radius: 50%;
-      cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      -webkit-appearance: none; width: 20px; height: 20px;
+      background: var(--accent); border-radius: 50%; cursor: pointer;
     }
 
-    /* Generate button */
+    /* ── Status ── */
+    .status {
+      text-align: center; font-size: 0.78rem;
+      color: var(--muted); padding: 6px 16px; min-height: 28px;
+    }
+    .status.ok { color: var(--success); }
+    .status.err { color: var(--danger); }
+
+    .progress-bar {
+      height: 2px; background: var(--border);
+      margin: 0 16px 4px; border-radius: 1px;
+      overflow: hidden; display: none;
+    }
+    .progress-bar .fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s; }
+
+    /* ── Generate bar ── */
     .generate-bar {
       position: fixed; bottom: 0; left: 0; right: 0;
-      padding: 12px 16px;
-      background: linear-gradient(to top, var(--bg) 70%, transparent);
+      padding: 10px 16px 14px;
+      background: linear-gradient(to top, var(--bg) 75%, transparent);
     }
     .generate-bar .inner { max-width: 480px; margin: 0 auto; }
-
     .btn-generate {
-      width: 100%; padding: 16px;
+      width: 100%; padding: 15px;
       background: var(--accent); color: #fff;
       border: none; border-radius: 14px;
       font-size: 1rem; font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
       -webkit-tap-highlight-color: transparent;
     }
-    .btn-generate:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-generate:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-generate:not(:disabled):active { transform: scale(0.97); }
 
-    /* Status */
-    .status {
-      text-align: center; font-size: 0.8rem;
-      color: var(--muted); margin-top: 8px; min-height: 18px;
+    /* ── Result modal-style bottom sheet ── */
+    .result-sheet {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
     }
-    .status.ok  { color: var(--success); }
-    .status.err { color: var(--danger); }
-
-    /* Progress */
-    .progress-bar {
-      height: 3px; background: var(--border);
-      border-radius: 2px; overflow: hidden;
-      margin-top: 10px; display: none;
+    .result-sheet.show { display: flex; }
+    .result-inner {
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      padding: 16px;
+      width: 100%; max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
     }
-    .progress-bar .fill {
-      height: 100%; background: var(--accent);
-      width: 0%; transition: width 0.3s;
-    }
-
-    /* Preview */
-    .preview-section { margin-top: 20px; display: none; }
-    .preview-section img { width: 100%; border-radius: 12px; display: block; }
-    .save-hint {
-      background: var(--surface); border-radius: 10px;
-      padding: 10px 14px; margin-top: 10px;
-      font-size: 0.8rem; color: var(--muted);
-      text-align: center; line-height: 1.5;
-    }
-    .btn-dl {
-      display: block; width: 100%; margin-top: 10px; padding: 13px;
-      background: var(--surface); color: var(--text);
-      border: 1px solid var(--border); border-radius: 12px;
-      font-size: 0.9rem; font-weight: 600; text-align: center;
+    .result-inner img { width: 100%; border-radius: 10px; display: block; }
+    .result-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .result-btn {
+      flex: 1; padding: 13px;
+      border: none; border-radius: 12px;
+      font-size: 0.9rem; font-weight: 600;
       cursor: pointer; -webkit-tap-highlight-color: transparent;
     }
+    .result-btn.primary { background: var(--accent); color: #fff; }
+    .result-btn.secondary { background: var(--border); color: var(--text); }
+    .save-hint {
+      text-align: center; font-size: 0.78rem; color: var(--muted);
+      margin-top: 8px; line-height: 1.5;
+    }
+    .handle {
+      width: 36px; height: 4px; background: var(--border);
+      border-radius: 2px; margin: 0 auto 14px;
+    }
 
-    canvas { display: none; }
+    canvas#exportCanvas { display: none; }
   </style>
 </head>
 <body>
 
 <header>
   <h1>Auto Collage</h1>
-  <p>Select photos &rarr; pick layout &rarr; save</p>
+  <button class="add-btn" id="addBtn">＋ Add Photos</button>
 </header>
-
-<div class="upload-zone" id="uploadZone">
-  <span class="icon">📷</span>
-  <span class="label">Add Photos</span>
-  <span class="hint">Tap to open your library &mdash; select multiple</span>
-</div>
 <input type="file" id="fileInput" accept="image/*" multiple>
 
-<div id="thumbSection" style="display:none">
-  <div class="section-title">Photos &mdash; tap two to swap order</div>
-  <div class="thumb-grid" id="thumbGrid"></div>
+<!-- Thumbnail strip -->
+<div class="thumb-strip-wrap" id="thumbWrap">
+  <div class="thumb-strip-label">Photos — tap two to swap</div>
+  <div class="thumb-strip" id="thumbStrip"></div>
   <div class="swap-hint" id="swapHint"></div>
 </div>
 
-<!-- Layout picker — shown only when photos are loaded -->
-<div id="layoutSection" style="display:none">
-  <div class="section-title">Layout</div>
-  <div class="layout-scroll" id="layoutPicker"></div>
+<!-- Live preview -->
+<div class="preview-wrap" id="previewWrap">
+  <canvas id="previewCanvas"></canvas>
+  <div class="preview-updating" id="previewUpdating"><div class="spinner"></div></div>
 </div>
 
-<div class="section-title" style="margin-top:16px">Options</div>
-<div class="options-row">
-  <div class="option-group">
-    <label>Background</label>
-    <select id="selBg">
-      <option value="#ffffff">White</option>
-      <option value="#000000">Black</option>
-      <option value="#f0f0f0">Light gray</option>
-    </select>
-  </div>
-  <div class="option-group">
-    <label>Quality</label>
-    <select id="selQuality">
-      <option value="a4">A4 · 300 DPI</option>
-      <option value="hd">HD · 4K</option>
-      <option value="web">Web · 2K</option>
-    </select>
-  </div>
-</div>
+<!-- Layout -->
+<div class="section-label" id="layoutLabel" style="display:none">Layout</div>
+<div class="layout-scroll" id="layoutScroll" style="display:none"></div>
 
-<div class="slider-row">
-  <label>Gap</label>
-  <input type="range" id="gapSlider" min="0" max="60" value="10">
-  <span class="val" id="gapVal">10</span>
+<!-- Ratio -->
+<div class="section-label" id="ratioLabel" style="display:none">Ratio</div>
+<div class="ratio-scroll" id="ratioScroll" style="display:none"></div>
+
+<!-- Options -->
+<div class="section-label" id="optLabel" style="display:none">Background · Gap</div>
+<div class="options-row" id="optRow" style="display:none">
+  <div class="bg-picker">
+    <div class="bg-swatch active" data-color="#ffffff" title="White"></div>
+    <div class="bg-swatch" data-color="#000000" title="Black"></div>
+    <div class="bg-swatch" data-color="#f0f0f0" title="Gray"></div>
+  </div>
+  <div class="gap-row">
+    <label>Gap</label>
+    <input type="range" id="gapSlider" min="0" max="60" value="10">
+    <span class="val" id="gapVal">10</span>
+  </div>
 </div>
 
 <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
-<div class="status" id="status">Add photos to begin</div>
+<div class="status" id="status">Tap "Add Photos" to begin</div>
 
-<div class="preview-section" id="previewSection">
-  <div class="section-title">Result</div>
-  <img id="previewImg" alt="Collage">
-  <div class="save-hint" id="saveHint"></div>
-  <button class="btn-dl" id="btnDl" style="display:none">⬇ Download again</button>
-</div>
-
-<canvas id="canvas"></canvas>
-
+<!-- Generate bar -->
 <div class="generate-bar">
   <div class="inner">
-    <button class="btn-generate" id="btnGenerate" disabled>Create Collage</button>
+    <button class="btn-generate" id="btnGenerate" disabled>Create &amp; Save</button>
   </div>
 </div>
 
+<!-- Result bottom sheet -->
+<div class="result-sheet" id="resultSheet">
+  <div class="result-inner">
+    <div class="handle"></div>
+    <img id="resultImg" alt="Collage result">
+    <div class="result-actions">
+      <button class="result-btn secondary" id="btnClose">Close</button>
+      <button class="result-btn primary" id="btnDl">⬇ Download</button>
+    </div>
+    <div class="save-hint" id="saveHint"></div>
+  </div>
+</div>
+
+<canvas id="exportCanvas"></canvas>
+
 <script>
-  // ── Layout definitions ────────────────────────────────────
-  // Each layout: { rows: [colsInRow1, colsInRow2, ...], label }
-  const LAYOUT_DEFS = {
-    1: [
-      { rows: [1],       label: 'Single' }
-    ],
-    2: [
-      { rows: [2],       label: 'Side ↔' },
-      { rows: [1,1],     label: 'Stack ↕' }
-    ],
-    3: [
-      { rows: [3],       label: 'Row' },
-      { rows: [1,2],     label: '1 + 2' },
-      { rows: [2,1],     label: '2 + 1' },
-      { rows: [1,1,1],   label: 'Column' }
-    ],
-    4: [
-      { rows: [2,2],     label: '2 × 2' },
-      { rows: [1,3],     label: '1 + 3' },
-      { rows: [3,1],     label: '3 + 1' },
-      { rows: [4],       label: 'Row' },
-      { rows: [1,1,1,1], label: 'Column' }
-    ],
-    5: [
-      { rows: [2,3],     label: '2 + 3' },
-      { rows: [3,2],     label: '3 + 2' },
-      { rows: [2,2,1],   label: '2+2+1' },
-      { rows: [1,2,2],   label: '1+2+2' },
-      { rows: [5],       label: 'Row' }
-    ],
-    6: [
-      { rows: [3,3],     label: '3 × 2' },
-      { rows: [2,2,2],   label: '2 × 3' },
-      { rows: [2,4],     label: '2 + 4' },
-      { rows: [4,2],     label: '4 + 2' },
-      { rows: [1,2,3],   label: '1+2+3' },
-      { rows: [3,2,1],   label: '3+2+1' }
-    ]
+  // ── Ratios ────────────────────────────────────────────────
+  const RATIOS = [
+    { id: '1:1',  label: '1:1',  sub: 'Square',   w: 1, h: 1,    pw: 28, ph: 28 },
+    { id: '4:5',  label: '4:5',  sub: 'Portrait',  w: 4, h: 5,    pw: 22, ph: 28 },
+    { id: '9:16', label: '9:16', sub: 'Story',     w: 9, h: 16,   pw: 16, ph: 28 },
+    { id: '16:9', label: '16:9', sub: 'Landscape', w: 16, h: 9,   pw: 28, ph: 16 },
+    { id: 'a4p',  label: 'A4',   sub: 'Portrait',  w: 210, h: 297, pw: 19, ph: 28 },
+    { id: 'a4l',  label: 'A4',   sub: 'Landscape', w: 297, h: 210, pw: 28, ph: 20 },
+  ];
+
+  // Output canvas sizes (OCR-quality)
+  const RATIO_SIZES = {
+    '1:1':  { w: 3000, h: 3000 },
+    '4:5':  { w: 2400, h: 3000 },
+    '9:16': { w: 1688, h: 3000 },
+    '16:9': { w: 3000, h: 1688 },
+    'a4p':  { w: 2480, h: 3508 },
+    'a4l':  { w: 3508, h: 2480 },
   };
 
-  // Auto-generate grid options for N > 6
+  // ── Layouts ───────────────────────────────────────────────
+  const LAYOUT_DEFS = {
+    1: [{ rows:[1],       label:'Single' }],
+    2: [{ rows:[2],       label:'Side ↔' }, { rows:[1,1], label:'Stack ↕' }],
+    3: [
+      { rows:[3],         label:'Row' },
+      { rows:[1,2],       label:'1+2' },
+      { rows:[2,1],       label:'2+1' },
+      { rows:[1,1,1],     label:'Column' }
+    ],
+    4: [
+      { rows:[2,2],       label:'2×2' },
+      { rows:[1,3],       label:'1+3' },
+      { rows:[3,1],       label:'3+1' },
+      { rows:[4],         label:'Row' },
+      { rows:[1,1,1,1],   label:'Col' }
+    ],
+    5: [
+      { rows:[2,3],       label:'2+3' },
+      { rows:[3,2],       label:'3+2' },
+      { rows:[2,2,1],     label:'2+2+1' },
+      { rows:[1,2,2],     label:'1+2+2' },
+      { rows:[5],         label:'Row' }
+    ],
+    6: [
+      { rows:[3,3],       label:'3×2' },
+      { rows:[2,2,2],     label:'2×3' },
+      { rows:[4,2],       label:'4+2' },
+      { rows:[2,4],       label:'2+4' },
+      { rows:[1,2,3],     label:'1+2+3' }
+    ],
+  };
+
   function autoLayouts(n) {
-    const layouts = [];
-    for (let cols = 1; cols <= n; cols++) {
-      const rows = Math.ceil(n / cols);
-      const rowsArr = [];
+    const out = [];
+    for (let c = 1; c <= n; c++) {
+      const r = Math.ceil(n / c);
+      const arr = [];
       let rem = n;
-      for (let r = 0; r < rows; r++) {
-        rowsArr.push(Math.min(cols, rem));
-        rem -= Math.min(cols, rem);
-      }
-      let label;
-      if (rows === 1)       label = `Row of ${cols}`;
-      else if (cols === 1)  label = `Col of ${rows}`;
-      else                  label = `${cols} × ${rows}`;
-      layouts.push({ rows: rowsArr, label });
+      for (let i = 0; i < r; i++) { const v = Math.min(c, rem); arr.push(v); rem -= v; }
+      out.push({ rows: arr, label: r===1 ? `Row ${c}` : c===1 ? `Col ${r}` : `${c}×${r}` });
     }
-    return layouts;
+    return out;
   }
 
-  function getLayouts(n) {
-    return LAYOUT_DEFS[n] || autoLayouts(n);
-  }
+  function getLayouts(n) { return LAYOUT_DEFS[n] || autoLayouts(n); }
 
-  // Build SVG icon for a layout
-  function layoutIcon(rowsArr) {
-    const W = 54, H = 40, g = 2.5, rx = 2;
-    const numRows = rowsArr.length;
-    const cellH = (H - g * (numRows + 1)) / numRows;
+  function layoutIcon(rows, ratioW, ratioH) {
+    const W = Math.round(40 * ratioW / Math.max(ratioW,ratioH));
+    const H = Math.round(40 * ratioH / Math.max(ratioW,ratioH));
+    const g = 2, rx = 1.5;
+    const numR = rows.length;
+    const cellH = (H - g*(numR+1)) / numR;
     let out = [];
     let y = g;
-    for (const cols of rowsArr) {
-      const cellW = (W - g * (cols + 1)) / cols;
+    for (const c of rows) {
+      const cellW = (W - g*(c+1)) / c;
       let x = g;
-      for (let c = 0; c < cols; c++) {
+      for (let i = 0; i < c; i++) {
         out.push(`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${cellW.toFixed(1)}" height="${cellH.toFixed(1)}" rx="${rx}"/>`);
         x += cellW + g;
       }
       y += cellH + g;
     }
-    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" fill="currentColor">${out.join('')}</svg>`;
+    return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" fill="currentColor">${out.join('')}</svg>`;
   }
 
-  // ── State ──────────────────────────────────────────────────
+  // ── State ─────────────────────────────────────────────────
   const images = [];
   let selectedLayout = null;
+  let selectedRatio = RATIOS[0];
+  let bgColor = '#ffffff';
   let swapIdx = null;
   let dragSrc = null;
+  let previewDebounce = null;
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
-  // ── Elements ───────────────────────────────────────────────
-  const uploadZone   = document.getElementById('uploadZone');
-  const fileInput    = document.getElementById('fileInput');
-  const thumbSection = document.getElementById('thumbSection');
-  const thumbGrid    = document.getElementById('thumbGrid');
-  const swapHint     = document.getElementById('swapHint');
-  const layoutSection= document.getElementById('layoutSection');
-  const layoutPicker = document.getElementById('layoutPicker');
-  const selBg        = document.getElementById('selBg');
-  const selQuality   = document.getElementById('selQuality');
-  const gapSlider    = document.getElementById('gapSlider');
-  const gapVal       = document.getElementById('gapVal');
-  const progressBar  = document.getElementById('progressBar');
-  const progressFill = document.getElementById('progressFill');
-  const statusEl     = document.getElementById('status');
-  const previewSec   = document.getElementById('previewSection');
-  const previewImg   = document.getElementById('previewImg');
-  const saveHint     = document.getElementById('saveHint');
-  const btnDl        = document.getElementById('btnDl');
-  const btnGenerate  = document.getElementById('btnGenerate');
-  const canvas       = document.getElementById('canvas');
-  const ctx          = canvas.getContext('2d');
+  // ── Elements ──────────────────────────────────────────────
+  const addBtn        = document.getElementById('addBtn');
+  const fileInput     = document.getElementById('fileInput');
+  const thumbWrap     = document.getElementById('thumbWrap');
+  const thumbStrip    = document.getElementById('thumbStrip');
+  const swapHint      = document.getElementById('swapHint');
+  const previewWrap   = document.getElementById('previewWrap');
+  const previewCanvas = document.getElementById('previewCanvas');
+  const previewUpd    = document.getElementById('previewUpdating');
+  const layoutLabel   = document.getElementById('layoutLabel');
+  const layoutScroll  = document.getElementById('layoutScroll');
+  const ratioLabel    = document.getElementById('ratioLabel');
+  const ratioScroll   = document.getElementById('ratioScroll');
+  const optLabel      = document.getElementById('optLabel');
+  const optRow        = document.getElementById('optRow');
+  const gapSlider     = document.getElementById('gapSlider');
+  const gapVal        = document.getElementById('gapVal');
+  const progressBar   = document.getElementById('progressBar');
+  const progressFill  = document.getElementById('progressFill');
+  const statusEl      = document.getElementById('status');
+  const btnGenerate   = document.getElementById('btnGenerate');
+  const resultSheet   = document.getElementById('resultSheet');
+  const resultImg     = document.getElementById('resultImg');
+  const saveHint      = document.getElementById('saveHint');
+  const btnClose      = document.getElementById('btnClose');
+  const btnDl         = document.getElementById('btnDl');
+  const exportCanvas  = document.getElementById('exportCanvas');
+  const exportCtx     = exportCanvas.getContext('2d');
+  const previewCtx    = previewCanvas.getContext('2d');
 
-  // ── Upload ─────────────────────────────────────────────────
-  uploadZone.addEventListener('click', () => fileInput.click());
-
-  fileInput.addEventListener('change', async (e) => {
+  // ── Upload ────────────────────────────────────────────────
+  addBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async e => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
     setStatus('Loading…');
@@ -463,242 +503,261 @@
       images.push({ file, url, img });
     }
     fileInput.value = '';
-    render();
+    renderThumbs();
     renderLayoutPicker();
+    renderRatioPicker();
+    showControls();
+    schedulePreview();
     setStatus('');
   });
 
-  // ── Thumbnails ─────────────────────────────────────────────
-  function render() {
-    thumbGrid.innerHTML = '';
-    swapIdx = null;
-    swapHint.textContent = '';
-
-    if (images.length === 0) {
-      thumbSection.style.display = 'none';
-      layoutSection.style.display = 'none';
-      btnGenerate.disabled = true;
-      setStatus('Add photos to begin');
-      return;
-    }
-
-    thumbSection.style.display = 'block';
-    btnGenerate.disabled = false;
-    setStatus(images.length === 1 ? '1 photo — add more for a collage' : `${images.length} photos ready`);
+  // ── Thumbnails ────────────────────────────────────────────
+  function renderThumbs() {
+    thumbStrip.innerHTML = '';
+    swapIdx = null; swapHint.textContent = '';
 
     images.forEach((item, i) => {
       const wrap = document.createElement('div');
       wrap.className = 'thumb-item';
-      wrap.dataset.idx = i;
       wrap.draggable = true;
 
       const img = document.createElement('img');
       img.src = item.url;
 
       const seq = document.createElement('span');
-      seq.className = 'seq';
-      seq.textContent = i + 1;
+      seq.className = 'seq'; seq.textContent = i + 1;
 
       const del = document.createElement('button');
-      del.className = 'del-btn';
-      del.textContent = '×';
-      del.addEventListener('click', e => {
-        e.stopPropagation();
+      del.className = 'del-btn'; del.textContent = '×';
+      del.addEventListener('click', ev => {
+        ev.stopPropagation();
         URL.revokeObjectURL(images[i].url);
         images.splice(i, 1);
-        render();
-        renderLayoutPicker();
+        if (images.length === 0) { showControls(); return; }
+        renderThumbs(); renderLayoutPicker(); schedulePreview();
       });
 
       wrap.addEventListener('click', () => tapSwap(i, wrap));
-
-      wrap.addEventListener('dragstart', e => {
-        dragSrc = i;
-        wrap.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-      });
+      wrap.addEventListener('dragstart', ev => { dragSrc = i; wrap.classList.add('dragging'); ev.dataTransfer.effectAllowed='move'; });
       wrap.addEventListener('dragend', () => wrap.classList.remove('dragging'));
-      wrap.addEventListener('dragover', e => { e.preventDefault(); wrap.classList.add('drag-over'); });
+      wrap.addEventListener('dragover', ev => { ev.preventDefault(); wrap.classList.add('drag-over'); });
       wrap.addEventListener('dragleave', () => wrap.classList.remove('drag-over'));
-      wrap.addEventListener('drop', e => {
-        e.preventDefault();
-        wrap.classList.remove('drag-over');
+      wrap.addEventListener('drop', ev => {
+        ev.preventDefault(); wrap.classList.remove('drag-over');
         if (dragSrc !== null && dragSrc !== i) {
-          const [moved] = images.splice(dragSrc, 1);
-          images.splice(i, 0, moved);
-          render();
+          const [m] = images.splice(dragSrc, 1);
+          images.splice(i, 0, m);
+          renderThumbs(); schedulePreview();
         }
         dragSrc = null;
       });
 
-      wrap.appendChild(img);
-      wrap.appendChild(seq);
-      wrap.appendChild(del);
-      thumbGrid.appendChild(wrap);
+      wrap.appendChild(img); wrap.appendChild(seq); wrap.appendChild(del);
+      thumbStrip.appendChild(wrap);
     });
   }
 
   function tapSwap(idx, el) {
     if (swapIdx === null) {
-      swapIdx = idx;
-      el.classList.add('selected');
-      swapHint.textContent = `Photo ${idx + 1} selected — tap another to swap`;
+      swapIdx = idx; el.classList.add('selected');
+      swapHint.textContent = `Photo ${idx+1} selected — tap another to swap`;
     } else if (swapIdx === idx) {
-      swapIdx = null;
-      el.classList.remove('selected');
-      swapHint.textContent = '';
+      swapIdx = null; el.classList.remove('selected'); swapHint.textContent = '';
     } else {
       [images[swapIdx], images[idx]] = [images[idx], images[swapIdx]];
-      swapIdx = null;
-      render();
+      swapIdx = null; renderThumbs(); schedulePreview();
     }
   }
 
-  // ── Layout picker ──────────────────────────────────────────
+  // ── Show/hide controls ────────────────────────────────────
+  function showControls() {
+    const has = images.length > 0;
+    thumbWrap.style.display   = has ? 'block' : 'none';
+    previewWrap.style.display = has ? 'block' : 'none';
+    layoutLabel.style.display = has ? 'block' : 'none';
+    layoutScroll.style.display= has ? 'flex'  : 'none';
+    ratioLabel.style.display  = has ? 'block' : 'none';
+    ratioScroll.style.display = has ? 'flex'  : 'none';
+    optLabel.style.display    = has ? 'block' : 'none';
+    optRow.style.display      = has ? 'flex'  : 'none';
+    btnGenerate.disabled      = !has;
+    if (!has) setStatus('Tap "Add Photos" to begin');
+  }
+
+  // ── Layout picker ─────────────────────────────────────────
   function renderLayoutPicker() {
     const n = images.length;
-    if (n === 0) { layoutSection.style.display = 'none'; return; }
-
-    layoutSection.style.display = 'block';
+    if (n === 0) return;
     const layouts = getLayouts(n);
-
-    // Reset selection to first layout if count changed or nothing selected
     if (!selectedLayout || !layouts.find(l => JSON.stringify(l.rows) === JSON.stringify(selectedLayout.rows))) {
       selectedLayout = layouts[0];
     }
-
-    layoutPicker.innerHTML = '';
+    const rw = selectedRatio.w, rh = selectedRatio.h;
+    layoutScroll.innerHTML = '';
     layouts.forEach(layout => {
       const btn = document.createElement('button');
-      btn.className = 'layout-btn' + (JSON.stringify(layout.rows) === JSON.stringify(selectedLayout.rows) ? ' active' : '');
-      btn.innerHTML = layoutIcon(layout.rows) + `<span class="lbl">${layout.label}</span>`;
-      btn.addEventListener('click', () => {
-        selectedLayout = layout;
-        renderLayoutPicker();
-      });
-      layoutPicker.appendChild(btn);
+      const isActive = JSON.stringify(layout.rows) === JSON.stringify(selectedLayout.rows);
+      btn.className = 'layout-btn' + (isActive ? ' active' : '');
+      btn.innerHTML = layoutIcon(layout.rows, rw, rh) + `<span class="lbl">${layout.label}</span>`;
+      btn.addEventListener('click', () => { selectedLayout = layout; renderLayoutPicker(); schedulePreview(); });
+      layoutScroll.appendChild(btn);
     });
   }
 
-  // ── Gap slider ─────────────────────────────────────────────
-  gapSlider.addEventListener('input', () => { gapVal.textContent = gapSlider.value; });
+  // ── Ratio picker ──────────────────────────────────────────
+  function renderRatioPicker() {
+    ratioScroll.innerHTML = '';
+    RATIOS.forEach(ratio => {
+      const btn = document.createElement('button');
+      btn.className = 'ratio-btn' + (ratio.id === selectedRatio.id ? ' active' : '');
+      btn.innerHTML = `
+        <div class="ratio-icon" style="width:${ratio.pw}px;height:${ratio.ph}px"></div>
+        <span class="lbl">${ratio.label}</span>
+        <span class="sub">${ratio.sub}</span>`;
+      btn.addEventListener('click', () => {
+        selectedRatio = ratio;
+        renderRatioPicker();
+        renderLayoutPicker(); // refresh icons for new aspect ratio
+        schedulePreview();
+      });
+      ratioScroll.appendChild(btn);
+    });
+  }
 
-  // ── Generate ───────────────────────────────────────────────
+  // ── Background swatches ───────────────────────────────────
+  document.querySelectorAll('.bg-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.bg-swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+      bgColor = sw.dataset.color;
+      schedulePreview();
+    });
+  });
+
+  // ── Gap slider ────────────────────────────────────────────
+  gapSlider.addEventListener('input', () => {
+    gapVal.textContent = gapSlider.value;
+    schedulePreview();
+  });
+
+  // ── Live preview ──────────────────────────────────────────
+  function schedulePreview() {
+    clearTimeout(previewDebounce);
+    previewUpd.classList.add('show');
+    previewDebounce = setTimeout(renderPreview, 180);
+  }
+
+  async function renderPreview() {
+    if (images.length === 0 || !selectedLayout) { previewUpd.classList.remove('show'); return; }
+
+    const ratio = selectedRatio;
+    const maxW = previewWrap.offsetWidth || 320;
+    const pw = maxW;
+    const ph = Math.round(pw * ratio.h / ratio.w);
+
+    previewCanvas.width = pw;
+    previewCanvas.height = ph;
+
+    previewCtx.fillStyle = bgColor;
+    previewCtx.fillRect(0, 0, pw, ph);
+
+    const gap = Math.round((parseInt(gapSlider.value) / 60) * Math.min(pw, ph) * 0.04);
+    await drawLayout(previewCtx, pw, ph, selectedLayout.rows, gap);
+    previewUpd.classList.remove('show');
+  }
+
+  // ── Core draw function (shared by preview + export) ───────
+  async function drawLayout(ctx, cw, ch, rowsArr, gap, yieldFn) {
+    const numRows = rowsArr.length;
+    const cellH = (ch - gap * (numRows + 1)) / numRows;
+    let imgIdx = 0;
+
+    for (let ri = 0; ri < numRows; ri++) {
+      const cols = rowsArr[ri];
+      const cellW = (cw - gap * (cols + 1)) / cols;
+      const y = gap + ri * (cellH + gap);
+
+      for (let ci = 0; ci < cols; ci++) {
+        const x = gap + ci * (cellW + gap);
+        if (imgIdx >= images.length) break;
+        const { img } = images[imgIdx++];
+
+        const iw = img.naturalWidth, ih = img.naturalHeight;
+        const ia = iw / ih, ca = cellW / cellH;
+        let dx, dy, dw, dh;
+        if (ia > ca) { dw=cellW; dh=cellW/ia; dx=x; dy=y+(cellH-dh)/2; }
+        else         { dh=cellH; dw=cellH*ia; dx=x+(cellW-dw)/2; dy=y; }
+
+        ctx.drawImage(img, 0, 0, iw, ih, dx, dy, dw, dh);
+        if (yieldFn) await yieldFn(imgIdx);
+      }
+    }
+  }
+
+  // ── Export (full quality) ─────────────────────────────────
   btnGenerate.addEventListener('click', generateCollage);
 
   async function generateCollage() {
-    if (images.length === 0 || !selectedLayout) return;
-
+    if (!images.length || !selectedLayout) return;
     btnGenerate.disabled = true;
     progressBar.style.display = 'block';
-    setProgress(5);
-    setStatus('Setting up canvas…');
+    setProgress(5); setStatus('Exporting high-quality…');
 
-    // Canvas size from quality setting + layout aspect ratio
-    const qual = selQuality.value;
-    let canvasLong, canvasShort;
-    if      (qual === 'a4') { canvasLong = 3508; canvasShort = 2480; }
-    else if (qual === 'hd') { canvasLong = 4096; canvasShort = 2732; }
-    else                    { canvasLong = 2560; canvasShort = 1920; }
+    const size = RATIO_SIZES[selectedRatio.id];
+    exportCanvas.width = size.w; exportCanvas.height = size.h;
+    exportCtx.fillStyle = bgColor;
+    exportCtx.fillRect(0, 0, size.w, size.h);
 
-    // Determine canvas orientation from layout
-    const maxCols = Math.max(...selectedLayout.rows);
-    const numRows = selectedLayout.rows.length;
-    let cw, ch;
-    if (maxCols > numRows)      { cw = canvasLong; ch = canvasShort; }  // landscape
-    else if (numRows > maxCols) { cw = canvasShort; ch = canvasLong; }  // portrait
-    else                        { cw = canvasShort; ch = canvasShort; } // square
-
-    canvas.width  = cw;
-    canvas.height = ch;
-
-    ctx.fillStyle = selBg.value;
-    ctx.fillRect(0, 0, cw, ch);
+    const gap = Math.round((parseInt(gapSlider.value) / 60) * Math.min(size.w, size.h) * 0.025);
     setProgress(15);
 
-    // Gap: slider 0–60 → 0–2.5% of shorter side (canvas pixels)
-    const gap = Math.round((parseInt(gapSlider.value) / 60) * Math.min(cw, ch) * 0.025);
+    await drawLayout(exportCtx, size.w, size.h, selectedLayout.rows, gap, async (idx) => {
+      setProgress(15 + Math.round(70 * idx / images.length));
+      await tick();
+    });
 
-    const rowsArr = selectedLayout.rows;
-    const numRowsLayout = rowsArr.length;
-    const cellH = (ch - gap * (numRowsLayout + 1)) / numRowsLayout;
-
-    setStatus(`Compositing ${images.length} photos…`);
-
-    let imgIdx = 0;
-    for (let rowIdx = 0; rowIdx < numRowsLayout; rowIdx++) {
-      const colsInRow = rowsArr[rowIdx];
-      const cellW = (cw - gap * (colsInRow + 1)) / colsInRow;
-      const y = gap + rowIdx * (cellH + gap);
-
-      for (let colIdx = 0; colIdx < colsInRow; colIdx++) {
-        const x = gap + colIdx * (cellW + gap);
-        const { img } = images[imgIdx++];
-
-        // Contain-fit: full image visible, centered, background fills gaps
-        const iw = img.naturalWidth, ih = img.naturalHeight;
-        const imgAsp = iw / ih, cellAsp = cellW / cellH;
-        let dx, dy, dw, dh;
-        if (imgAsp > cellAsp) {
-          dw = cellW; dh = cellW / imgAsp;
-          dx = x;    dy = y + (cellH - dh) / 2;
-        } else {
-          dh = cellH; dw = cellH * imgAsp;
-          dx = x + (cellW - dw) / 2; dy = y;
-        }
-        ctx.drawImage(img, 0, 0, iw, ih, dx, dy, dw, dh);
-
-        setProgress(15 + Math.round(70 * imgIdx / images.length));
-        await tick();
-      }
-    }
-
-    setProgress(90);
-    setStatus('Exporting…');
-    await tick();
-
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+    setProgress(90); setStatus('Saving…'); await tick();
+    const dataUrl = exportCanvas.toDataURL('image/jpeg', 0.95);
     setProgress(100);
 
-    previewImg.src = dataUrl;
-    previewSec.style.display = 'block';
-    previewSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Show result sheet
+    resultImg.src = dataUrl;
+    resultSheet.classList.add('show');
 
     if (isIOS) {
-      saveHint.textContent = '📱 iOS: long-press the image above → "Save to Photos"';
-      btnDl.style.display = 'none';
+      saveHint.textContent = '📱 Long-press the image above → "Save to Photos"';
     } else {
-      saveHint.textContent = '✅ Saved — tap below to download again';
-      btnDl.style.display = 'block';
+      saveHint.textContent = '✅ Tap Download to save';
       const ts = new Date().toISOString().slice(0,19).replace(/[T:]/g,'-');
       triggerDownload(dataUrl, `collage-${ts}.jpg`);
     }
 
     const kb = Math.round(dataUrl.length * 0.75 / 1024);
-    setStatus(`Done — ${cw}×${ch}px · ~${kb >= 1024 ? (kb/1024).toFixed(1)+'MB' : kb+'KB'} · JPEG 95%`, 'ok');
+    setStatus(`${size.w}×${size.h}px · ~${kb>=1024?(kb/1024).toFixed(1)+'MB':kb+'KB'} · JPEG 95%`, 'ok');
     btnGenerate.disabled = false;
-    setTimeout(() => { progressBar.style.display = 'none'; setProgress(0); }, 800);
+    setTimeout(() => { progressBar.style.display='none'; setProgress(0); }, 800);
   }
 
-  // ── Helpers ────────────────────────────────────────────────
-  function triggerDownload(dataUrl, filename) {
-    const a = document.createElement('a');
-    a.href = dataUrl; a.download = filename;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  }
-
-  function setStatus(msg, cls = '') {
-    statusEl.textContent = msg;
-    statusEl.className = 'status ' + cls;
-  }
-
-  function setProgress(pct) { progressFill.style.width = pct + '%'; }
-  function tick() { return new Promise(r => setTimeout(r, 0)); }
-
+  // ── Result sheet ──────────────────────────────────────────
+  btnClose.addEventListener('click', () => resultSheet.classList.remove('show'));
   btnDl.addEventListener('click', () => {
     const ts = new Date().toISOString().slice(0,19).replace(/[T:]/g,'-');
-    triggerDownload(previewImg.src, `collage-${ts}.jpg`);
+    triggerDownload(resultImg.src, `collage-${ts}.jpg`);
   });
+  resultSheet.addEventListener('click', e => { if (e.target === resultSheet) resultSheet.classList.remove('show'); });
+
+  // ── Helpers ───────────────────────────────────────────────
+  function triggerDownload(dataUrl, name) {
+    const a = document.createElement('a'); a.href=dataUrl; a.download=name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+  function setStatus(msg, cls='') { statusEl.textContent=msg; statusEl.className='status '+cls; }
+  function setProgress(p) { progressFill.style.width=p+'%'; }
+  function tick() { return new Promise(r => setTimeout(r,0)); }
+
+  // ── Init ──────────────────────────────────────────────────
+  renderRatioPicker();
+  showControls();
 </script>
 
 </body>
