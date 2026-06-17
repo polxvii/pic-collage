@@ -343,7 +343,7 @@
 <!-- Generate bar -->
 <div class="generate-bar">
   <div class="inner">
-    <button class="btn-generate" id="btnGenerate" disabled>Create &amp; Save</button>
+    <button class="btn-generate" id="btnGenerate" disabled>Save</button>
   </div>
 </div>
 
@@ -720,20 +720,20 @@
     const dataUrl = exportCanvas.toDataURL('image/jpeg', 0.95);
     setProgress(100);
 
-    // Show result sheet
-    resultImg.src = dataUrl;
-    resultSheet.classList.add('show');
+    const kb = Math.round(dataUrl.length * 0.75 / 1024);
+    const sizeLabel = `${size.w}×${size.h}px · ~${kb>=1024?(kb/1024).toFixed(1)+'MB':kb+'KB'}`;
 
     if (isIOS) {
-      saveHint.textContent = '📱 Long-press the image above → "Save to Photos"';
+      // iOS can't auto-download — show image for long-press save
+      resultImg.src = dataUrl;
+      resultSheet.classList.add('show');
+      saveHint.textContent = '📱 Long-press the image → "Save to Photos"';
+      setStatus(`Saved — ${sizeLabel}`, 'ok');
     } else {
-      saveHint.textContent = '✅ Tap Download to save';
       const ts = new Date().toISOString().slice(0,19).replace(/[T:]/g,'-');
       triggerDownload(dataUrl, `collage-${ts}.jpg`);
+      setStatus(`Saved — ${sizeLabel}`, 'ok');
     }
-
-    const kb = Math.round(dataUrl.length * 0.75 / 1024);
-    setStatus(`${size.w}×${size.h}px · ~${kb>=1024?(kb/1024).toFixed(1)+'MB':kb+'KB'} · JPEG 95%`, 'ok');
     btnGenerate.disabled = false;
     setTimeout(() => { progressBar.style.display='none'; setProgress(0); }, 800);
   }
