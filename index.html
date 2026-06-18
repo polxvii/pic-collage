@@ -34,20 +34,63 @@
 
     /* ── Header ── */
     header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 16px 8px;
+      text-align: center;
+      padding: 20px 16px 8px;
     }
     header h1 { font-size: 1.25rem; font-weight: 700; }
-    .add-btn {
-      display: flex; align-items: center; gap: 6px;
-      padding: 8px 14px;
-      background: var(--accent); color: #fff;
-      border: none; border-radius: 20px;
-      font-size: 0.85rem; font-weight: 600;
-      cursor: pointer; -webkit-tap-highlight-color: transparent;
+
+    /* ── Empty state big + ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 180px);
+      padding: 24px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
+    .empty-plus {
+      width: min(72vw, 300px);
+      aspect-ratio: 1;
+      border: 2.5px dashed #3a3a3c;
+      border-radius: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .empty-state:active .empty-plus {
+      border-color: var(--accent);
+      background: rgba(10,132,255,0.06);
+    }
+    .empty-plus .plus-icon {
+      font-size: 3.5rem;
+      line-height: 1;
+      color: #3a3a3c;
+    }
+    .empty-plus .plus-label {
+      font-size: 1rem; font-weight: 600; color: var(--muted);
+    }
+    .empty-plus .plus-hint {
+      font-size: 0.78rem; color: #48484a; text-align: center; padding: 0 20px;
+    }
+
+    /* ── Add-more chip inside thumb strip ── */
+    .add-more-chip {
+      flex: 0 0 64px; width: 64px; height: 64px;
+      border-radius: 8px;
+      border: 2px dashed #3a3a3c;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; color: #3a3a3c;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .add-more-chip:active { border-color: var(--accent); color: var(--accent); }
+
     #fileInput { display: none; }
 
     /* ── Thumbnail strip ── */
@@ -296,13 +339,21 @@
 <body>
 
 <header>
-  <button class="add-btn" id="addBtn">＋ Add Photos</button>
   <h1>Auto Collage</h1>
 </header>
 <input type="file" id="fileInput" accept="image/*" multiple>
 
+<!-- Empty state -->
+<div class="empty-state" id="emptyState">
+  <div class="empty-plus">
+    <span class="plus-icon">＋</span>
+    <span class="plus-label">Add Photos</span>
+    <span class="plus-hint">Tap to select from your library</span>
+  </div>
+</div>
+
 <!-- Thumbnail strip -->
-<div class="thumb-strip-wrap" id="thumbWrap">
+<div class="thumb-strip-wrap" id="thumbWrap" style="display:none">
   <div class="thumb-strip-label">Photos — tap two to swap</div>
   <div class="thumb-strip" id="thumbStrip"></div>
   <div class="swap-hint" id="swapHint"></div>
@@ -471,7 +522,7 @@
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
   // ── Elements ──────────────────────────────────────────────
-  const addBtn        = document.getElementById('addBtn');
+  const emptyState    = document.getElementById('emptyState');
   const fileInput     = document.getElementById('fileInput');
   const thumbWrap     = document.getElementById('thumbWrap');
   const thumbStrip    = document.getElementById('thumbStrip');
@@ -501,7 +552,7 @@
   const previewCtx    = previewCanvas.getContext('2d');
 
   // ── Upload ────────────────────────────────────────────────
-  addBtn.addEventListener('click', () => fileInput.click());
+  emptyState.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', async e => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -565,6 +616,13 @@
       wrap.appendChild(img); wrap.appendChild(seq); wrap.appendChild(del);
       thumbStrip.appendChild(wrap);
     });
+
+    // "+" add-more chip at end of strip
+    const chip = document.createElement('div');
+    chip.className = 'add-more-chip';
+    chip.textContent = '＋';
+    chip.addEventListener('click', () => fileInput.click());
+    thumbStrip.appendChild(chip);
   }
 
   function tapSwap(idx, el) {
@@ -582,6 +640,7 @@
   // ── Show/hide controls ────────────────────────────────────
   function showControls() {
     const has = images.length > 0;
+    emptyState.style.display  = has ? 'none'  : 'flex';
     thumbWrap.style.display   = has ? 'block' : 'none';
     previewWrap.style.display = has ? 'block' : 'none';
     layoutLabel.style.display = has ? 'block' : 'none';
@@ -591,7 +650,7 @@
     optLabel.style.display    = has ? 'block' : 'none';
     optRow.style.display      = has ? 'flex'  : 'none';
     btnGenerate.disabled      = !has;
-    if (!has) setStatus('Tap "Add Photos" to begin');
+    if (!has) setStatus('');
   }
 
   // ── Layout picker ─────────────────────────────────────────
