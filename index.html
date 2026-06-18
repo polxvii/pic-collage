@@ -735,25 +735,23 @@
 
     const ts = new Date().toISOString().slice(0,19).replace(/[T:]/g,'-');
     const filename = `collage-${ts}.jpg`;
-
-    // Try Web Share API first (saves directly to gallery on Android & iOS)
     const blob = await fetch(dataUrl).then(r => r.blob());
     const file = new File([blob], filename, { type: 'image/jpeg' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+
+    // Web Share API: on iOS shows share sheet → tap "Save Image" → saved to Photos
+    // On Android: tap "Save to photos" in share sheet
+    const tryShare = navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }));
+    if (tryShare) {
       try {
         await navigator.share({ files: [file], title: 'Collage' });
         setStatus(`Saved — ${sizeLabel}`, 'ok');
       } catch (e) {
+        // User cancelled share sheet — fall back to download
         if (e.name !== 'AbortError') triggerDownload(dataUrl, filename);
-        setStatus(`Saved — ${sizeLabel}`, 'ok');
+        setStatus(e.name === 'AbortError' ? '' : `Saved — ${sizeLabel}`, 'ok');
       }
-    } else if (isIOS) {
-      // Fallback for iOS without share support: show image to long-press
-      resultImg.src = dataUrl;
-      resultSheet.classList.add('show');
-      saveHint.textContent = '📱 Long-press the image → "Save to Photos"';
-      setStatus(`Done — ${sizeLabel}`, 'ok');
     } else {
+      // Desktop or unsupported browser — direct download
       triggerDownload(dataUrl, filename);
       setStatus(`Saved — ${sizeLabel}`, 'ok');
     }
