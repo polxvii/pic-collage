@@ -673,12 +673,13 @@
     if (n === 0) return;
     const layouts = getLayouts(n);
     if (!selectedLayout || !layouts.find(l => JSON.stringify(l.rows) === JSON.stringify(selectedLayout.rows))) {
-      const savedIdx = parseInt(localStorage.getItem('collage_layout_idx') || '0');
+      const raw = parseInt(localStorage.getItem('collage_layout_idx') || '0');
+      const savedIdx = isNaN(raw) ? 0 : raw;
       selectedLayout = layouts[Math.min(savedIdx, layouts.length - 1)];
     }
     const rw = selectedRatio.w, rh = selectedRatio.h;
     layoutScroll.innerHTML = '';
-    layouts.forEach(layout => {
+    layouts.forEach((layout, idx) => {
       const btn = document.createElement('button');
       const isActive = JSON.stringify(layout.rows) === JSON.stringify(selectedLayout.rows);
       btn.className = 'layout-btn' + (isActive ? ' active' : '');
@@ -849,14 +850,22 @@
     await drawLayout(exportCtx, size.w, size.h, selectedLayout.rows, gap, async () => { await tick(); });
 
     const blob = await new Promise(r => exportCanvas.toBlob(r, 'image/png'));
-    try {
-      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    let copied = false;
+    if (navigator.clipboard && navigator.clipboard.write) {
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        copied = true;
+      } catch (e) { /* fall through */ }
+    }
+    if (copied) {
       setStatus('Copied!', 'ok');
-    } catch (e) {
-      setStatus('Copy not supported on this browser', 'err');
+    } else {
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setStatus('Opened in new tab — right-click → Copy image', '');
     }
     btnCopy.disabled = false;
-    setTimeout(() => setStatus(''), 2500);
+    setTimeout(() => setStatus(''), 3500);
   }
 
   // ── Result sheet ──────────────────────────────────────────
