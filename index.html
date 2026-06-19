@@ -284,9 +284,9 @@
       padding: 10px 16px 14px;
       background: linear-gradient(to top, var(--bg) 75%, transparent);
     }
-    .generate-bar .inner { max-width: 480px; margin: 0 auto; }
+    .generate-bar .inner { max-width: 480px; margin: 0 auto; display: flex; gap: 10px; }
     .btn-generate {
-      width: 100%; padding: 15px;
+      flex: 1; padding: 15px;
       background: var(--accent); color: #fff;
       border: none; border-radius: 14px;
       font-size: 1rem; font-weight: 700;
@@ -295,6 +295,17 @@
     }
     .btn-generate:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-generate:not(:disabled):active { transform: scale(0.97); }
+    .btn-copy {
+      flex: 0 0 auto; padding: 15px 18px;
+      background: var(--surface); color: var(--text);
+      border: 1px solid var(--border); border-radius: 14px;
+      font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+      white-space: nowrap;
+    }
+    .btn-copy:disabled { opacity: 0.3; cursor: not-allowed; }
+    .btn-copy:not(:disabled):active { transform: scale(0.97); }
 
     /* ── Result modal-style bottom sheet ── */
     .result-sheet {
@@ -394,6 +405,7 @@
 <!-- Generate bar -->
 <div class="generate-bar">
   <div class="inner">
+    <button class="btn-copy" id="btnCopy" disabled>⎘ Copy</button>
     <button class="btn-generate" id="btnGenerate" disabled>Save</button>
   </div>
 </div>
@@ -541,6 +553,7 @@
   const progressBar   = document.getElementById('progressBar');
   const progressFill  = document.getElementById('progressFill');
   const statusEl      = document.getElementById('status');
+  const btnCopy       = document.getElementById('btnCopy');
   const btnGenerate   = document.getElementById('btnGenerate');
   const resultSheet   = document.getElementById('resultSheet');
   const resultImg     = document.getElementById('resultImg');
@@ -650,6 +663,7 @@
     optLabel.style.display    = has ? 'block' : 'none';
     optRow.style.display      = has ? 'flex'  : 'none';
     btnGenerate.disabled      = !has;
+    btnCopy.disabled          = !has;
     if (!has) setStatus('');
   }
 
@@ -765,6 +779,7 @@
 
   // ── Export (full quality) ─────────────────────────────────
   btnGenerate.addEventListener('click', generateCollage);
+  btnCopy.addEventListener('click', copyCollage);
 
   async function generateCollage() {
     if (!images.length || !selectedLayout) return;
@@ -816,6 +831,30 @@
     }
     btnGenerate.disabled = false;
     setTimeout(() => { progressBar.style.display='none'; setProgress(0); }, 800);
+  }
+
+  async function copyCollage() {
+    if (!images.length || !selectedLayout) return;
+    btnCopy.disabled = true;
+    setStatus('Copying…');
+
+    const size = RATIO_SIZES[selectedRatio.id];
+    exportCanvas.width = size.w; exportCanvas.height = size.h;
+    exportCtx.fillStyle = bgColor;
+    exportCtx.fillRect(0, 0, size.w, size.h);
+
+    const gap = Math.round((parseInt(gapSlider.value) / 60) * Math.min(size.w, size.h) * 0.025);
+    await drawLayout(exportCtx, size.w, size.h, selectedLayout.rows, gap, async () => { await tick(); });
+
+    const blob = await new Promise(r => exportCanvas.toBlob(r, 'image/jpeg', 0.95));
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/jpeg': blob })]);
+      setStatus('Copied!', 'ok');
+    } catch (e) {
+      setStatus('Copy not supported on this browser', 'err');
+    }
+    btnCopy.disabled = false;
+    setTimeout(() => setStatus(''), 2500);
   }
 
   // ── Result sheet ──────────────────────────────────────────
