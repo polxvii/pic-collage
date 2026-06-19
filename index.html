@@ -435,6 +435,7 @@
     { id: '9:16', label: '9:16', sub: 'Story',     w: 9,   h: 16,  pw: 16, ph: 28 },
     { id: '16:9', label: '16:9', sub: 'Landscape', w: 16,  h: 9,   pw: 28, ph: 16 },
     { id: '4:3',  label: '4:3',  sub: 'Landscape', w: 4,   h: 3,   pw: 28, ph: 21 },
+    { id: '5:4',  label: '5:4',  sub: 'Landscape', w: 5,   h: 4,   pw: 28, ph: 22 },
     { id: '3:2',  label: '3:2',  sub: 'Landscape', w: 3,   h: 2,   pw: 28, ph: 19 },
     { id: '21:9', label: '21:9', sub: 'Ultra',     w: 21,  h: 9,   pw: 28, ph: 12 },
     { id: 'a4p',  label: 'A4',   sub: 'Portrait',  w: 210, h: 297, pw: 19, ph: 28 },
@@ -450,6 +451,7 @@
     '9:16': { w: 1688, h: 3000 },
     '16:9': { w: 3000, h: 1688 },
     '4:3':  { w: 3000, h: 2250 },
+    '5:4':  { w: 3000, h: 2400 },
     '3:2':  { w: 3000, h: 2000 },
     '21:9': { w: 3000, h: 1286 },
     'a4p':  { w: 2480, h: 3508 },
@@ -782,7 +784,33 @@
 
   // ── Export (full quality) ─────────────────────────────────
   btnGenerate.addEventListener('click', generateCollage);
-  btnCopy.addEventListener('click', copyCollage);
+  // clipboard.write must be called synchronously within the click gesture (before any await).
+  // We pass a Promise to ClipboardItem so the browser keeps the permission while the canvas renders.
+  btnCopy.addEventListener('click', () => {
+    if (!images.length || !selectedLayout) return;
+    btnCopy.disabled = true;
+    setStatus('Copying…');
+
+    const size = RATIO_SIZES[selectedRatio.id];
+    exportCanvas.width = size.w; exportCanvas.height = size.h;
+    exportCtx.fillStyle = bgColor;
+    exportCtx.fillRect(0, 0, size.w, size.h);
+    const gap = Math.round((parseInt(gapSlider.value) / 60) * Math.min(size.w, size.h) * 0.025);
+
+    const blobPromise = drawLayout(exportCtx, size.w, size.h, selectedLayout.rows, gap, async () => { await tick(); })
+      .then(() => new Promise(r => exportCanvas.toBlob(r, 'image/png')));
+
+    const done = (msg, cls) => { setStatus(msg, cls); btnCopy.disabled = false; setTimeout(() => setStatus(''), 3000); };
+    const openTab = async () => { const blob = await blobPromise; window.open(URL.createObjectURL(blob), '_blank'); done('Opened in new tab — right-click → Copy image', ''); };
+
+    if (navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem !== 'undefined') {
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': blobPromise })])
+        .then(() => done('Copied!', 'ok'))
+        .catch(openTab);
+    } else {
+      openTab();
+    }
+  });
 
   async function generateCollage() {
     if (!images.length || !selectedLayout) return;
@@ -834,38 +862,6 @@
     }
     btnGenerate.disabled = false;
     setTimeout(() => { progressBar.style.display='none'; setProgress(0); }, 800);
-  }
-
-  async function copyCollage() {
-    if (!images.length || !selectedLayout) return;
-    btnCopy.disabled = true;
-    setStatus('Copying…');
-
-    const size = RATIO_SIZES[selectedRatio.id];
-    exportCanvas.width = size.w; exportCanvas.height = size.h;
-    exportCtx.fillStyle = bgColor;
-    exportCtx.fillRect(0, 0, size.w, size.h);
-
-    const gap = Math.round((parseInt(gapSlider.value) / 60) * Math.min(size.w, size.h) * 0.025);
-    await drawLayout(exportCtx, size.w, size.h, selectedLayout.rows, gap, async () => { await tick(); });
-
-    const blob = await new Promise(r => exportCanvas.toBlob(r, 'image/png'));
-    let copied = false;
-    if (navigator.clipboard && navigator.clipboard.write) {
-      try {
-        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-        copied = true;
-      } catch (e) { /* fall through */ }
-    }
-    if (copied) {
-      setStatus('Copied!', 'ok');
-    } else {
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      setStatus('Opened in new tab — right-click → Copy image', '');
-    }
-    btnCopy.disabled = false;
-    setTimeout(() => setStatus(''), 3500);
   }
 
   // ── Result sheet ──────────────────────────────────────────
