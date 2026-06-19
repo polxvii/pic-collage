@@ -739,18 +739,19 @@
     if (images.length === 0 || !selectedLayout) { previewUpd.classList.remove('show'); return; }
 
     const ratio = selectedRatio;
-    const maxW = previewWrap.offsetWidth || 320;
-    const pw = maxW;
-    const ph = Math.round(pw * ratio.h / ratio.w);
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = previewWrap.offsetWidth || 320;
+    const cssH = Math.round(cssW * ratio.h / ratio.w);
 
-    previewCanvas.width = pw;
-    previewCanvas.height = ph;
+    previewCanvas.width  = Math.round(cssW * dpr);
+    previewCanvas.height = Math.round(cssH * dpr);
 
+    previewCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     previewCtx.fillStyle = bgColor;
-    previewCtx.fillRect(0, 0, pw, ph);
+    previewCtx.fillRect(0, 0, cssW, cssH);
 
-    const gap = Math.round((parseInt(gapSlider.value) / 60) * Math.min(pw, ph) * 0.04);
-    await drawLayout(previewCtx, pw, ph, selectedLayout.rows, gap);
+    const gap = Math.round((parseInt(gapSlider.value) / 60) * Math.min(cssW, cssH) * 0.04);
+    await drawLayout(previewCtx, cssW, cssH, selectedLayout.rows, gap);
     previewUpd.classList.remove('show');
   }
 
