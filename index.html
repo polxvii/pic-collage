@@ -673,7 +673,8 @@
     if (n === 0) return;
     const layouts = getLayouts(n);
     if (!selectedLayout || !layouts.find(l => JSON.stringify(l.rows) === JSON.stringify(selectedLayout.rows))) {
-      selectedLayout = layouts[0];
+      const savedIdx = parseInt(localStorage.getItem('collage_layout_idx') || '0');
+      selectedLayout = layouts[Math.min(savedIdx, layouts.length - 1)];
     }
     const rw = selectedRatio.w, rh = selectedRatio.h;
     layoutScroll.innerHTML = '';
@@ -682,7 +683,7 @@
       const isActive = JSON.stringify(layout.rows) === JSON.stringify(selectedLayout.rows);
       btn.className = 'layout-btn' + (isActive ? ' active' : '');
       btn.innerHTML = layoutIcon(layout.rows, rw, rh) + `<span class="lbl">${layout.label}</span>`;
-      btn.addEventListener('click', () => { selectedLayout = layout; renderLayoutPicker(); schedulePreview(); });
+      btn.addEventListener('click', () => { selectedLayout = layout; localStorage.setItem('collage_layout_idx', String(idx)); renderLayoutPicker(); schedulePreview(); });
       layoutScroll.appendChild(btn);
     });
   }
@@ -699,6 +700,7 @@
         <span class="sub">${ratio.sub}</span>`;
       btn.addEventListener('click', () => {
         selectedRatio = ratio;
+        localStorage.setItem('collage_ratio', ratio.id);
         renderRatioPicker();
         renderLayoutPicker(); // refresh icons for new aspect ratio
         schedulePreview();
@@ -846,9 +848,9 @@
     const gap = Math.round((parseInt(gapSlider.value) / 60) * Math.min(size.w, size.h) * 0.025);
     await drawLayout(exportCtx, size.w, size.h, selectedLayout.rows, gap, async () => { await tick(); });
 
-    const blob = await new Promise(r => exportCanvas.toBlob(r, 'image/jpeg', 0.95));
+    const blob = await new Promise(r => exportCanvas.toBlob(r, 'image/png'));
     try {
-      await navigator.clipboard.write([new ClipboardItem({ 'image/jpeg': blob })]);
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
       setStatus('Copied!', 'ok');
     } catch (e) {
       setStatus('Copy not supported on this browser', 'err');
@@ -875,6 +877,8 @@
   function tick() { return new Promise(r => setTimeout(r,0)); }
 
   // ── Init ──────────────────────────────────────────────────
+  const savedRatio = localStorage.getItem('collage_ratio');
+  if (savedRatio) { const r = RATIOS.find(x => x.id === savedRatio); if (r) selectedRatio = r; }
   renderRatioPicker();
   showControls();
 </script>
