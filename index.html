@@ -254,6 +254,9 @@
     .gap-row { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 140px; }
     .gap-row label { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
     .gap-row .val { font-size: 0.75rem; min-width: 20px; text-align: right; }
+    .custom-ratio-row { display: none; align-items: center; gap: 10px; padding: 4px 16px 10px; }
+    .custom-ratio-row input[type=range] { flex: 1; }
+    .custom-ratio-lbl { font-size: 0.8rem; color: var(--fg); min-width: 56px; text-align: center; font-variant-numeric: tabular-nums; }
     input[type=range] {
       flex: 1; -webkit-appearance: none; height: 4px;
       background: var(--border); border-radius: 2px; outline: none;
@@ -383,6 +386,10 @@
 <!-- Ratio -->
 <div class="section-label" id="ratioLabel" style="display:none">Ratio</div>
 <div class="ratio-scroll" id="ratioScroll" style="display:none"></div>
+<div class="custom-ratio-row" id="customRatioRow">
+  <span class="custom-ratio-lbl" id="customRatioLabel">1 : 1</span>
+  <input type="range" id="customRatioSlider" min="0" max="100" value="50" step="1">
+</div>
 
 <!-- Options -->
 <div class="section-label" id="optLabel" style="display:none">Background · Gap</div>
@@ -440,6 +447,7 @@
     { id: '21:9', label: '21:9', sub: 'Ultra',     w: 21,  h: 9,   pw: 28, ph: 12 },
     { id: 'a4p',  label: 'A4',   sub: 'Portrait',  w: 210, h: 297, pw: 19, ph: 28 },
     { id: 'a4l',  label: 'A4',   sub: 'Landscape', w: 297, h: 210, pw: 28, ph: 20 },
+    { id: 'custom', label: '⚙',  sub: 'Custom',    w: 1,   h: 1,   pw: 28, ph: 28 },
   ];
 
   // Output canvas sizes (OCR-quality)
@@ -530,6 +538,7 @@
   let selectedLayout = null;
   let selectedRatio = RATIOS[0];
   let bgColor = '#ffffff';
+  let customAspect = 1.0;
   let swapIdx = null;
   let dragSrc = null;
   let previewDebounce = null;
@@ -550,8 +559,11 @@
   const ratioScroll   = document.getElementById('ratioScroll');
   const optLabel      = document.getElementById('optLabel');
   const optRow        = document.getElementById('optRow');
-  const gapSlider     = document.getElementById('gapSlider');
-  const gapVal        = document.getElementById('gapVal');
+  const gapSlider          = document.getElementById('gapSlider');
+  const gapVal             = document.getElementById('gapVal');
+  const customRatioRow     = document.getElementById('customRatioRow');
+  const customRatioSlider  = document.getElementById('customRatioSlider');
+  const customRatioLabel   = document.getElementById('customRatioLabel');
   const progressBar   = document.getElementById('progressBar');
   const progressFill  = document.getElementById('progressFill');
   const statusEl      = document.getElementById('status');
@@ -704,8 +716,9 @@
       btn.addEventListener('click', () => {
         selectedRatio = ratio;
         localStorage.setItem('collage_ratio', ratio.id);
+        customRatioRow.style.display = ratio.id === 'custom' ? 'flex' : 'none';
         renderRatioPicker();
-        renderLayoutPicker(); // refresh icons for new aspect ratio
+        renderLayoutPicker();
         schedulePreview();
       });
       ratioScroll.appendChild(btn);
@@ -722,9 +735,43 @@
     });
   });
 
+  // ── Custom ratio helpers ──────────────────────────────────
+  function sliderToAspect(v) { return (1/3) * Math.pow(9, v / 100); }
+  function aspectToLabel(r) {
+    for (const d of [1,2,3,4,5,6,7,8,9,10,12,16]) {
+      const n = r * d;
+      if (Math.abs(n - Math.round(n)) < 0.06) return `${Math.round(n)} : ${d}`;
+    }
+    return r >= 1 ? `${r.toFixed(1)} : 1` : `1 : ${(1/r).toFixed(1)}`;
+  }
+  function getCanvasSize(id) {
+    if (id !== 'custom') return RATIO_SIZES[id];
+    return customAspect >= 1
+      ? { w: 3000, h: Math.round(3000 / customAspect) }
+      : { w: Math.round(3000 * customAspect), h: 3000 };
+  }
+  function applyCustomAspect(v) {
+    customAspect = sliderToAspect(v);
+    customRatioLabel.textContent = aspectToLabel(customAspect);
+    const cr = RATIOS.find(r => r.id === 'custom');
+    if (cr) {
+      cr.w = customAspect >= 1 ? customAspect : 1;
+      cr.h = customAspect >= 1 ? 1 : 1 / customAspect;
+      cr.pw = customAspect >= 1 ? 28 : Math.max(12, Math.round(28 * customAspect));
+      cr.ph = customAspect >= 1 ? Math.max(12, Math.round(28 / customAspect)) : 28;
+    }
+    localStorage.setItem('collage_custom_v', String(v));
+  }
+
+  customRatioSlider.addEventListener('input', () => {
+    applyCustomAspect(parseInt(customRatioSlider.value));
+    if (selectedRatio.id === 'custom') { renderRatioPicker(); renderLayoutPicker(); schedulePreview(); }
+  });
+
   // ── Gap slider ────────────────────────────────────────────
   gapSlider.addEventListener('input', () => {
     gapVal.textContent = gapSlider.value;
+    localStorage.setItem('collage_gap', gapSlider.value);
     schedulePreview();
   });
 
@@ -792,7 +839,7 @@
     btnCopy.disabled = true;
     setStatus('Copying…');
 
-    const size = RATIO_SIZES[selectedRatio.id];
+    const size = getCanvasSize(selectedRatio.id);
     exportCanvas.width = size.w; exportCanvas.height = size.h;
     exportCtx.fillStyle = bgColor;
     exportCtx.fillRect(0, 0, size.w, size.h);
@@ -819,7 +866,7 @@
     progressBar.style.display = 'block';
     setProgress(5); setStatus('Exporting high-quality…');
 
-    const size = RATIO_SIZES[selectedRatio.id];
+    const size = getCanvasSize(selectedRatio.id);
     exportCanvas.width = size.w; exportCanvas.height = size.h;
     exportCtx.fillStyle = bgColor;
     exportCtx.fillRect(0, 0, size.w, size.h);
@@ -883,8 +930,17 @@
   function tick() { return new Promise(r => setTimeout(r,0)); }
 
   // ── Init ──────────────────────────────────────────────────
+  const savedCustomV = parseInt(localStorage.getItem('collage_custom_v') || '50');
+  customRatioSlider.value = savedCustomV;
+  applyCustomAspect(savedCustomV);
+
   const savedRatio = localStorage.getItem('collage_ratio');
   if (savedRatio) { const r = RATIOS.find(x => x.id === savedRatio); if (r) selectedRatio = r; }
+  customRatioRow.style.display = selectedRatio.id === 'custom' ? 'flex' : 'none';
+
+  const savedGap = localStorage.getItem('collage_gap');
+  if (savedGap) { gapSlider.value = savedGap; gapVal.textContent = savedGap; }
+
   renderRatioPicker();
   showControls();
 </script>
