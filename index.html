@@ -677,6 +677,7 @@
     ratioScroll.style.display = has ? 'flex'  : 'none';
     optLabel.style.display    = has ? 'block' : 'none';
     optRow.style.display      = has ? 'flex'  : 'none';
+    customRatioRow.style.display = (has && selectedRatio.id === 'custom') ? 'flex' : 'none';
     btnGenerate.disabled      = !has;
     btnCopy.disabled          = !has;
     if (!has) setStatus('');
@@ -946,7 +947,6 @@
 
   const savedRatio = localStorage.getItem('collage_ratio');
   if (savedRatio) { const r = RATIOS.find(x => x.id === savedRatio); if (r) selectedRatio = r; }
-  customRatioRow.style.display = selectedRatio.id === 'custom' ? 'flex' : 'none';
 
   const savedGap = localStorage.getItem('collage_gap');
   if (savedGap) { gapSlider.value = savedGap; gapVal.textContent = savedGap; }
