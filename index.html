@@ -700,7 +700,7 @@
       const isActive = JSON.stringify(layout.rows) === JSON.stringify(selectedLayout.rows);
       btn.className = 'layout-btn' + (isActive ? ' active' : '');
       btn.innerHTML = layoutIcon(layout.rows, rw, rh) + `<span class="lbl">${layout.label}</span>`;
-      btn.addEventListener('click', () => { selectedLayout = layout; localStorage.setItem('collage_layout_idx', String(idx)); renderLayoutPicker(); schedulePreview(); });
+      btn.addEventListener('click', () => { selectedLayout = layout; localStorage.setItem('collage_layout_idx', String(idx)); if (selectedRatio.id === 'custom') autoFitCustomRatio(); renderLayoutPicker(); schedulePreview(); });
       layoutScroll.appendChild(btn);
     });
   }
@@ -741,9 +741,26 @@
   // ── Custom ratio helpers ──────────────────────────────────
   function sliderToAspect(v) { return (1/3) * Math.pow(9, v / 100); }
   function autoFitCustomRatio() {
-    if (!images.length) return;
-    const logSum = images.reduce((s, { img }) => s + Math.log(img.naturalWidth / img.naturalHeight), 0);
-    const aspect = Math.exp(logSum / images.length);
+    if (!images.length || !selectedLayout) return;
+    // For each image, find the canvas aspect ratio that would make its cell
+    // exactly match the image — cell_ratio = canvas_ratio * numRows / cols_in_row
+    // so optimal canvas_ratio = image_ratio * cols_in_row / numRows
+    // Then take geometric mean of all optimal canvas ratios.
+    const rows = selectedLayout.rows;
+    const numRows = rows.length;
+    let logSum = 0, count = 0;
+    let imgIdx = 0;
+    for (let ri = 0; ri < numRows; ri++) {
+      const cols = rows[ri];
+      for (let ci = 0; ci < cols && imgIdx < images.length; ci++, imgIdx++) {
+        const { img } = images[imgIdx];
+        const imgAspect = img.naturalWidth / img.naturalHeight;
+        const optCanvas = imgAspect * cols / numRows;
+        logSum += Math.log(optCanvas);
+        count++;
+      }
+    }
+    const aspect = Math.exp(logSum / count);
     const v = Math.max(0, Math.min(100, Math.round(Math.log(aspect * 3) / Math.log(9) * 100)));
     customRatioSlider.value = v;
     applyCustomAspect(v);
