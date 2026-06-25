@@ -99,10 +99,18 @@
       display: none;
     }
     .thumb-strip-label {
+      display: flex; align-items: center; justify-content: space-between;
       font-size: 0.68rem; color: var(--muted); font-weight: 600;
       text-transform: uppercase; letter-spacing: 0.7px;
       margin-bottom: 6px;
     }
+    .btn-clear-all {
+      font-size: 0.7rem; color: var(--muted); background: none;
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 2px 8px; cursor: pointer; text-transform: none;
+      letter-spacing: 0; font-weight: 400;
+    }
+    .btn-clear-all:active { opacity: 0.6; }
     .thumb-strip {
       display: flex; gap: 6px;
       overflow-x: auto; padding-bottom: 4px;
@@ -368,7 +376,10 @@
 
 <!-- Thumbnail strip -->
 <div class="thumb-strip-wrap" id="thumbWrap" style="display:none">
-  <div class="thumb-strip-label">Photos — tap two to swap</div>
+  <div class="thumb-strip-label">
+    <span>Photos — tap two to swap</span>
+    <button class="btn-clear-all" id="btnClearAll">Clear all</button>
+  </div>
   <div class="thumb-strip" id="thumbStrip"></div>
   <div class="swap-hint" id="swapHint"></div>
 </div>
@@ -549,6 +560,7 @@
   const fileInput     = document.getElementById('fileInput');
   const thumbWrap     = document.getElementById('thumbWrap');
   const thumbStrip    = document.getElementById('thumbStrip');
+  const btnClearAll   = document.getElementById('btnClearAll');
   const swapHint      = document.getElementById('swapHint');
   const previewWrap   = document.getElementById('previewWrap');
   const previewCanvas = document.getElementById('previewCanvas');
@@ -577,6 +589,15 @@
   const exportCanvas  = document.getElementById('exportCanvas');
   const exportCtx     = exportCanvas.getContext('2d');
   const previewCtx    = previewCanvas.getContext('2d');
+
+  // ── Clear all ─────────────────────────────────────────────
+  btnClearAll.addEventListener('click', () => {
+    images.length = 0;
+    selectedLayout = null;
+    swapIdx = null;
+    showControls();
+    setStatus('');
+  });
 
   // ── Upload ────────────────────────────────────────────────
   emptyState.addEventListener('click', () => fileInput.click());
